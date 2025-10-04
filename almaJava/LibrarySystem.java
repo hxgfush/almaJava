@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.Objects;
 
@@ -21,7 +22,7 @@ class BorrowRecord {
                " | Date Borrowed: " + dateBorrowed;
     }
 
-    // ✅ Proper equality check so contains() and remove() work correctly
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -41,11 +42,15 @@ class BorrowRecord {
 }
 
 public class LibrarySystem {
+    private static List<BorrowRecord> currentList;
     private static ArrayList<BorrowRecord> arrayList = new ArrayList<>();
     private static LinkedList<BorrowRecord> linkedList = new LinkedList<>();
     private static Scanner sc = new Scanner(System.in);
+    private static String currentImplementation;
 
     public static void main(String[] args) {
+        selectImplementation();
+        
         int choice;
         do {
             showMenu();
@@ -57,7 +62,9 @@ public class LibrarySystem {
                 case 2: removeRecord(); break;
                 case 3: displayRecords(); break;
                 case 4: compareLists(); break;
-                case 5: System.out.println("Exiting program..."); break;
+                case 5: 
+                    System.out.println("Exiting program..."); 
+                    break;
                 default: System.out.println("Invalid choice!");
             }
 
@@ -68,8 +75,37 @@ public class LibrarySystem {
         } while (choice != 5);
     }
 
+    private static void selectImplementation() {
+        System.out.println("=== Library System Implementation Selection ===");
+        System.out.println("1. ArrayList");
+        System.out.println("2. LinkedList");
+        System.out.print("Select list implementation (1 or 2): ");
+        
+        int choice = Integer.parseInt(sc.nextLine());
+        
+        switch (choice) {
+            case 1:
+                currentList = arrayList;
+                currentImplementation = "ArrayList";
+                System.out.println("\nUsing ArrayList implementation");
+                break;
+            case 2:
+                currentList = linkedList;
+                currentImplementation = "LinkedList";
+                System.out.println("\nUsing LinkedList implementation");
+                break;
+            default:
+                System.out.println("Invalid choice! Defaulting to ArrayList");
+                currentList = arrayList;
+                currentImplementation = "ArrayList";
+        }
+        
+        System.out.println("Press ENTER to continue to main menu...");
+        sc.nextLine();
+    }
+
     private static void showMenu() {
-        System.out.println("\n--- Library Borrowing System ---");
+        System.out.println("\n--- Library Borrowing System (" + currentImplementation + ") ---");
         System.out.println("1. Add a borrowing record");
         System.out.println("2. Remove a borrowing record");
         System.out.println("3. Display all borrowing records");
@@ -86,8 +122,14 @@ public class LibrarySystem {
         String date = sc.nextLine();
 
         BorrowRecord record = new BorrowRecord(title, borrower, date);
-        arrayList.add(record);
-        linkedList.add(record);
+        currentList.add(record);
+        
+       
+        if (currentList == arrayList) {
+            linkedList.add(record);
+        } else {
+            arrayList.add(record);
+        }
 
         System.out.println("\nRecord added successfully!");
     }
@@ -96,15 +138,22 @@ public class LibrarySystem {
         System.out.print("Enter borrower name or book title to remove: ");
         String keyword = sc.nextLine();
 
-        boolean removedFromArray = arrayList.removeIf(r ->
+        boolean removed = currentList.removeIf(r ->
                 r.bookTitle.equalsIgnoreCase(keyword) ||
                 r.borrowerName.equalsIgnoreCase(keyword));
 
-        boolean removedFromLinked = linkedList.removeIf(r ->
+        
+        if (currentList == arrayList) {
+            linkedList.removeIf(r ->
                 r.bookTitle.equalsIgnoreCase(keyword) ||
                 r.borrowerName.equalsIgnoreCase(keyword));
+        } else {
+            arrayList.removeIf(r ->
+                r.bookTitle.equalsIgnoreCase(keyword) ||
+                r.borrowerName.equalsIgnoreCase(keyword));
+        }
 
-        if (removedFromArray || removedFromLinked) {
+        if (removed) {
             System.out.println("\nRecord removed successfully!");
         } else {
             System.out.println("\nNo record found with that name or title.");
@@ -112,15 +161,16 @@ public class LibrarySystem {
     }
 
     private static void displayRecords() {
-        if (arrayList.isEmpty()) {
+        if (currentList.isEmpty()) {
             System.out.println("\nNo records found.");
             return;
         }
 
-        System.out.println("\n--- Borrowing Records ---");
-        for (BorrowRecord r : arrayList) {
+        System.out.println("\n--- Borrowing Records (" + currentImplementation + ") ---");
+        for (BorrowRecord r : currentList) {
             System.out.println(r);
         }
+        System.out.println("Total records: " + currentList.size());
     }
 
     private static void compareLists() {
@@ -165,11 +215,15 @@ public class LibrarySystem {
         long linkedRemove = end - start;
 
         System.out.println("\n--- Performance Comparison ---");
+        System.out.println("Current Implementation: " + currentImplementation);
         System.out.println("ArrayList add time: " + arrayAdd + " ns");
         System.out.println("LinkedList add time: " + linkedAdd + " ns");
         System.out.println("ArrayList search time: " + arraySearch + " ns");
         System.out.println("LinkedList search time: " + linkedSearch + " ns");
         System.out.println("ArrayList remove time: " + arrayRemove + " ns");
         System.out.println("LinkedList remove time: " + linkedRemove + " ns");
+        
+        // Show which implementation is currently active
+        System.out.println("\n✓ Currently using: " + currentImplementation);
     }
 }
