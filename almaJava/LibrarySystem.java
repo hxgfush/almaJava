@@ -22,7 +22,6 @@ class BorrowRecord {
                " | Date Borrowed: " + dateBorrowed;
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -61,7 +60,7 @@ public class LibrarySystem {
                 case 1: addRecord(); break;
                 case 2: removeRecord(); break;
                 case 3: displayRecords(); break;
-                case 4: compareLists(); break;
+                case 4: changeImplementation(); break;
                 case 5: 
                     System.out.println("Exiting program..."); 
                     break;
@@ -109,7 +108,7 @@ public class LibrarySystem {
         System.out.println("1. Add a borrowing record");
         System.out.println("2. Remove a borrowing record");
         System.out.println("3. Display all borrowing records");
-        System.out.println("4. Compare ArrayList vs LinkedList");
+        System.out.println("4. Change List Implementation");
         System.out.println("5. Exit");
     }
 
@@ -122,108 +121,176 @@ public class LibrarySystem {
         String date = sc.nextLine();
 
         BorrowRecord record = new BorrowRecord(title, borrower, date);
-        currentList.add(record);
         
-       
-        if (currentList == arrayList) {
-            linkedList.add(record);
-        } else {
-            arrayList.add(record);
-        }
-
-        System.out.println("\nRecord added successfully!");
+        // Add to both lists to keep them synchronized
+        arrayList.add(record);
+        linkedList.add(record);
+        
+        System.out.println("\nRecord added successfully to both ArrayList and LinkedList!");
     }
 
     private static void removeRecord() {
         System.out.print("Enter borrower name or book title to remove: ");
         String keyword = sc.nextLine();
 
-        boolean removed = currentList.removeIf(r ->
+        // Remove from both lists to keep them synchronized
+        boolean removedFromArrayList = arrayList.removeIf(r ->
+                r.bookTitle.equalsIgnoreCase(keyword) ||
+                r.borrowerName.equalsIgnoreCase(keyword));
+                
+        boolean removedFromLinkedList = linkedList.removeIf(r ->
                 r.bookTitle.equalsIgnoreCase(keyword) ||
                 r.borrowerName.equalsIgnoreCase(keyword));
 
-        
-        if (currentList == arrayList) {
-            linkedList.removeIf(r ->
-                r.bookTitle.equalsIgnoreCase(keyword) ||
-                r.borrowerName.equalsIgnoreCase(keyword));
-        } else {
-            arrayList.removeIf(r ->
-                r.bookTitle.equalsIgnoreCase(keyword) ||
-                r.borrowerName.equalsIgnoreCase(keyword));
-        }
-
-        if (removed) {
-            System.out.println("\nRecord removed successfully!");
+        if (removedFromArrayList || removedFromLinkedList) {
+            System.out.println("\nRecord removed successfully from both lists!");
         } else {
             System.out.println("\nNo record found with that name or title.");
         }
     }
 
     private static void displayRecords() {
-        if (currentList.isEmpty()) {
-            System.out.println("\nNo records found.");
+        System.out.println("\n=== Display Borrowing Records ===");
+        System.out.println("1. Display ArrayList Records");
+        System.out.println("2. Display LinkedList Records");
+        System.out.println("3. Display Both Lists");
+        System.out.print("Select display option (1, 2, or 3): ");
+        
+        int choice = Integer.parseInt(sc.nextLine());
+        
+        switch (choice) {
+            case 1:
+                displayArrayListRecords();
+                break;
+            case 2:
+                displayLinkedListRecords();
+                break;
+            case 3:
+                displayBothLists();
+                break;
+            default:
+                System.out.println("Invalid choice! Displaying current implementation: " + currentImplementation);
+                displayCurrentList();
+        }
+    }
+
+    private static void displayArrayListRecords() {
+        if (arrayList.isEmpty()) {
+            System.out.println("\n--- ArrayList Records ---");
+            System.out.println("No records found in ArrayList.");
             return;
         }
 
-        System.out.println("\n--- Borrowing Records (" + currentImplementation + ") ---");
-        for (BorrowRecord r : currentList) {
-            System.out.println(r);
+        System.out.println("\n--- ArrayList Records ---");
+        for (int i = 0; i < arrayList.size(); i++) {
+            System.out.println("Index " + i + ": " + arrayList.get(i));
         }
-        System.out.println("Total records: " + currentList.size());
+        System.out.println("Total records in ArrayList: " + arrayList.size());
     }
 
-    private static void compareLists() {
-        long start, end;
+    private static void displayLinkedListRecords() {
+        if (linkedList.isEmpty()) {
+            System.out.println("\n--- LinkedList Records ---");
+            System.out.println("No records found in LinkedList.");
+            return;
+        }
 
-        BorrowRecord tempRecord = new BorrowRecord("Temp Book", "Temp Borrower", "Today");
+        System.out.println("\n--- LinkedList Records ---");
+        int index = 0;
+        for (BorrowRecord record : linkedList) {
+            System.out.println("Position " + index + ": " + record);
+            index++;
+        }
+        System.out.println("Total records in LinkedList: " + linkedList.size());
+    }
 
-        // ArrayList add timing
-        start = System.nanoTime();
-        arrayList.add(tempRecord);
-        end = System.nanoTime();
-        long arrayAdd = end - start;
-
-        // LinkedList add timing
-        start = System.nanoTime();
-        linkedList.add(tempRecord);
-        end = System.nanoTime();
-        long linkedAdd = end - start;
-
-        // ArrayList search timing
-        start = System.nanoTime();
-        arrayList.contains(tempRecord);
-        end = System.nanoTime();
-        long arraySearch = end - start;
-
-        // LinkedList search timing
-        start = System.nanoTime();
-        linkedList.contains(tempRecord);
-        end = System.nanoTime();
-        long linkedSearch = end - start;
-
-        // ArrayList remove timing
-        start = System.nanoTime();
-        arrayList.remove(tempRecord);
-        end = System.nanoTime();
-        long arrayRemove = end - start;
-
-        // LinkedList remove timing
-        start = System.nanoTime();
-        linkedList.remove(tempRecord);
-        end = System.nanoTime();
-        long linkedRemove = end - start;
-
-        System.out.println("\n--- Performance Comparison ---");
-        System.out.println("Current Implementation: " + currentImplementation);
-        System.out.println("ArrayList add time: " + arrayAdd + " ns");
-        System.out.println("LinkedList add time: " + linkedAdd + " ns");
-        System.out.println("ArrayList search time: " + arraySearch + " ns");
-        System.out.println("LinkedList search time: " + linkedSearch + " ns");
-        System.out.println("ArrayList remove time: " + arrayRemove + " ns");
-        System.out.println("LinkedList remove time: " + linkedRemove + " ns");
+    private static void displayBothLists() {
+        System.out.println("\n=== Comparison of Both Lists ===");
         
-        // Show which implementation is currently active
-        System.out.println("\n✓ Currently using: " + currentImplementation);
+        // Display ArrayList records
+        System.out.println("\n--- ArrayList Records (" + arrayList.size() + " records) ---");
+        if (arrayList.isEmpty()) {
+            System.out.println("No records in ArrayList");
+        } else {
+            for (int i = 0; i < arrayList.size(); i++) {
+                System.out.println("ArrayList Index " + i + ": " + arrayList.get(i));
+            }
+        }
+        
+        // Display LinkedList records
+        System.out.println("\n--- LinkedList Records (" + linkedList.size() + " records) ---");
+        if (linkedList.isEmpty()) {
+            System.out.println("No records in LinkedList");
+        } else {
+            int index = 0;
+            for (BorrowRecord record : linkedList) {
+                System.out.println("LinkedList Position " + index + ": " + record);
+                index++;
+            }
+        }
+        
+        // Verify both lists have the same content
+        System.out.println("\n--- List Comparison ---");
+        System.out.println("Both lists contain same records: " + (arrayList.equals(linkedList) ? "YES" : "NO"));
+        System.out.println("ArrayList size: " + arrayList.size());
+        System.out.println("LinkedList size: " + linkedList.size());
+    }
+
+    private static void displayCurrentList() {
+        if (currentList.isEmpty()) {
+            System.out.println("\n--- " + currentImplementation + " Records ---");
+            System.out.println("No records found.");
+            return;
+        }
+
+        System.out.println("\n--- " + currentImplementation + " Records ---");
+        if (currentImplementation.equals("ArrayList")) {
+            for (int i = 0; i < currentList.size(); i++) {
+                System.out.println("Index " + i + ": " + currentList.get(i));
+            }
+        } else {
+            int index = 0;
+            for (BorrowRecord record : currentList) {
+                System.out.println("Position " + index + ": " + record);
+                index++;
+            }
+        }
+        System.out.println("Total records in " + currentImplementation + ": " + currentList.size());
+    }
+
+    private static void changeImplementation() {
+        System.out.println("\n=== Change List Implementation ===");
+        System.out.println("Current implementation: " + currentImplementation);
+        System.out.println("1. Switch to ArrayList");
+        System.out.println("2. Switch to LinkedList");
+        System.out.print("Select new implementation (1 or 2): ");
+        
+        int choice = Integer.parseInt(sc.nextLine());
+        
+        String previousImplementation = currentImplementation;
+        
+        switch (choice) {
+            case 1:
+                currentList = arrayList;
+                currentImplementation = "ArrayList";
+                System.out.println("\nSwitched to ArrayList implementation");
+                break;
+            case 2:
+                currentList = linkedList;
+                currentImplementation = "LinkedList";
+                System.out.println("\nSwitched to LinkedList implementation");
+                break;
+            default:
+                System.out.println("Invalid choice! Keeping current implementation: " + currentImplementation);
+                return;
+        }
+        
+        if (!previousImplementation.equals(currentImplementation)) {
+            System.out.println("Successfully changed from " + previousImplementation + " to " + currentImplementation);
+        }
+        
+        // Display current record count for both lists
+        System.out.println("Records in ArrayList: " + arrayList.size());
+        System.out.println("Records in LinkedList: " + linkedList.size());
     }
 }
