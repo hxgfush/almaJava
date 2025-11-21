@@ -74,7 +74,7 @@ public class BinarySearchTreeDemo {
 
         // Insert nodes into BST
         System.out.println("=== INSERTING VALUES INTO BST ===");
-        int[] values = {50, 30, 70, 20, 40, 60, 80, 10, 35, 45, 65};
+        int[] values = {65, 90, 23, 56, 34, 67, 54, 23, 17, 86, 49}; 
         
         for (int value : values) {
             bst.insert(value);
@@ -88,3 +88,4 @@ public class BinarySearchTreeDemo {
         System.out.println("\n=== PROGRAM EXECUTION COMPLETE ===");
     }
 }
+
